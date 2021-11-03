@@ -1,0 +1,140 @@
+groups:
+- name: Host
+  rules:
+  - alert: chia_miner_host_no_exist
+    annotations:
+      description: 主机失联
+      summary: 主机{{ $labels.instance }}失联
+    expr: up {job=~"chia-service"}  == 0
+    for: 5m
+    labels:
+      descCN: 无法检测到主机
+      level: 重要信息
+      severity: critical
+      source: SYSTEM
+      team: Chia
+  - alert: chia_host_cpu_temp_utilization
+    annotations:
+      description: CPU温度过高
+      summary: '{{ $labels.instance }}CPU温度过高'
+    expr: node_hwmon_temp_celsius { area=~"gc" } > 90
+    for: 5m
+    labels:
+      descCN: CPU温度过高
+      level: 重要信息
+      severity: critical
+      source: SYSTEM
+      team: Chia
+  - alert: chia_miner_harvester_process_no_exist
+    annotations:
+      description: 收割进程不存在
+      summary: 收割进程不存在
+    expr: chia_harvester{job=~"chia-service"} == 0
+    for: 5m
+    labels:
+      descCN: 收割进程不存在
+      level: high
+      severity: high
+      source: CHIA
+      team: Chia
+  - alert: chia_miner_daemon_process_no_exist
+    annotations:
+      description: damon进程不存在
+      summary: '{{ $labels.instance }}lotus进程不存在'
+    expr: chia_daemon{job=~"chia-service"} == 0
+    for: 5m
+    labels:
+      descCN: damon进程不存在
+      level: high
+      severity: high
+      source: CHIA
+      team: Chia
+  - alert: chia_high_cpu_utilization
+    annotations:
+      description: CPU使用率超过99%
+      summary: CPU利用率超过99%
+    expr: 100 * (1 - avg(irate(node_cpu_seconds_total{mode="idle",job=~"chia-service"}[2m]))
+      by(instance)) > 99
+    for: 30m
+    labels:
+      descCN: CPU利用率太高
+      level: high
+      severity: high
+      source: SYSTEM
+      team: Chia
+  - alert: chia_high_mem_utilization
+    annotations:
+      description: 内存使用率超过99%
+      summary: 内存利用率太高
+    expr: (node_memory_MemTotal_bytes{job=~"chia-service"} - node_memory_MemAvailable_bytes)
+      / node_memory_MemTotal_bytes * 100 > 99
+    for: 30m
+    labels:
+      descCN: 内存利用率太高
+      level: high
+      severity: high
+      source: SYSTEM
+      team: Chia
+  - alert: chia_high_root_disk_utilization
+    annotations:
+      description: 挂载点/，使用率{{ $value }}%, 超过99%
+      summary: 根磁盘利用率超过99%
+    expr: 100 * (node_filesystem_size_bytes{fstype=~"xfs|ext4",mountpoint="/",job=~"chia-service"}
+      - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 99
+    for: 5m
+    labels:
+      descCN: 根磁盘利用率太高
+      level: high
+      severity: high
+      source: SYSTEM
+      team: Chia
+  - alert: chia_kern_error
+    annotations:
+      description: 有内核报错
+      summary: 有内核错误
+    expr: kern_errs{job=~"chia-service"}> 0
+    for: 5m
+    labels:
+      descCN: 内核错误
+      level: high
+      severity: high
+      source: KERNEL
+      team: ChiaKern
+  - alert: chia_exist_read_only_disk
+    annotations:
+      description: 有只读磁盘, 设备名{{$labels.device}}
+      summary: 有只读磁盘, 设备名{{$labels.device}}
+    expr: disk_stat{job=~"chia-service"}> 0
+    for: 5m
+    labels:
+      descCN: 有只读磁盘
+      level: high
+      severity: high
+      source: HARDWARE
+      team: Chia
+  - alert: chia_exist_chaos_files
+    annotations:
+      description: 存在混乱文件,挂载点{{$labels.chaos_path}},文件数{{$labels.chaos_nums}}
+      summary: 存在混乱文件,挂载点{{$labels.chaos_path}},文件数{{$labels.chaos_nums}}
+    expr: chia_chaos{job=~"chia-service"}> 0
+    for: 10m
+    labels:
+      descCN: 存在混乱文件
+      level: high
+      severity: high
+      source: CHIA
+      team: Chia
+  - alert: chia_disk_high_temperature
+    annotations:
+      description: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+      summary: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+    expr: disk_temp{job=~"chia-service"} >= 100 and disk_temp{job=~"chia-service"}
+      < 255
+    for: 5m
+    labels:
+      descCN: 磁盘温度太高
+      level: high
+      severity: high
+      source: HARDWARE
+      team: Chia
+

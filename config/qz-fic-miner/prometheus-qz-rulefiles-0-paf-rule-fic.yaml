@@ -1,0 +1,29 @@
+groups:
+- name: Host
+  rules:
+  - alert: lotus_diff_too_large
+    annotations:
+      description: 创始节点高度不同步
+      summary: 创始节点高度不同步
+    expr: max(lotus) - min(lotus) > 2
+    for: 1m
+    labels:
+      descCN: 创始节点高度不同步
+      level: high
+      namespace: paf
+      severity: high
+      source: FILECASH
+      team: Infra
+  - alert: drand_diff_too_large
+    annotations:
+      description: 随机数节点轮数不同
+      summary: 随机数节点轮数不同
+    expr: drand_diff{container=~"qz-file-exporter"} > 1
+    for: 5m
+    labels:
+      descCN: 随机数节点轮数不同
+      level: high
+      namespace: paf
+      severity: high
+      team: Drand
+

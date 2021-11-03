@@ -1,0 +1,145 @@
+groups:
+- name: Host
+  rules:
+  - alert: fil_worker_host_no_exist
+    annotations:
+      description: 主机失联
+      summary: 主机{{ $labels.instance }}失联
+    expr: up {job=~"FIL-worker-service"}  == 0
+    for: 1m
+    labels:
+      descCN: 无法检测到Worker主机
+      level: 重要信息
+      severity: critical
+      team: FIL-Worker
+  - alert: fil_worker_gpu_no_exist
+    annotations:
+      description: 显卡失联
+      summary: 主机{{ $labels.instance }}显卡失联
+    expr: up {job=~"FIL-dcgm-worker-service"} == 0
+    for: 1m
+    labels:
+      descCN: 无法检测到Worker显卡
+      level: 重要信息
+      severity: critical
+      team: FIL-Worker
+  - alert: fil_worker_gpu_temp_no_exist
+    annotations:
+      description: 显卡掉卡
+      summary: 主机{{ $labels.instance }}显卡掉卡
+    expr: count(DCGM_FI_DEV_GPU_TEMP{job=~"FIL-dcgm-worker-service"}) by (instance)
+      < 2
+    for: 1m
+    labels:
+      descCN: 检测到Worker掉显卡
+      job: FIL-dcgm-worker-service
+      level: 重要信息
+      severity: critical
+      team: FIL-Worker
+  - alert: fil_worker_process_no_exist
+    annotations:
+      description: Worker进程不存在
+      summary: 主机{{ $labels.instance }}Worker进程不存在
+    expr: file_worker_process{job=~"FIL-worker-service"} == 0
+    for: 10m
+    labels:
+      descCN: Worker进程不存在
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_nvidia_driver_abnormal
+    annotations:
+      description: nvidia驱动异常
+      summary: 主机{{ $labels.instance }}nvidia驱动异常
+    expr: online_dcgm{job=~"FIL-worker-service"} < 2
+    for: 5m
+    labels:
+      descCN: nvidia驱动异常
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_high_nvme_disk_utilization
+    annotations:
+      description: 设备名{{$labels.device}},挂载点{{ $labels.mountpoint }}，使用率{{ $value
+        }}%, 超过99%
+      summary: 主机{{ $labels.instance }}挂载点{{ $labels.mountpoint }}使用率超过99%
+    expr: 100 * (node_filesystem_size_bytes{fstype=~"xfs|ext4",mountpoint=~"/mnt/nvme0n1p1|/mnt/nvme1n1p1|/mnt/nvme2n1p1|/mnt/nvme3n1p1|/mnt/nvme4n1p1",job=~"FIL-worker-service"}
+      - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 99
+    for: 5m
+    labels:
+      descCN: nvme磁盘利用率太高
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_high_cpu_utilization
+    annotations:
+      description: CPU使用率{{$value}}%, 超过99%
+      summary: 主机{{ $labels.instance }}CPU利用率大于99%
+    expr: 100 * (1 - avg(irate(node_cpu_seconds_total{mode="idle",job=~"FIL-worker-service"}[2m]))
+      by(instance)) > 99
+    for: 30m
+    labels:
+      descCN: CPU利用率太高
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_high_mem_utilization
+    annotations:
+      description: 内存使用率{{ $value }}%, 超过99%
+      summary: 主机{{ $labels.instance }}内存利用率大于99%
+    expr: (node_memory_MemTotal_bytes{job=~"FIL-worker-service"} - node_memory_MemAvailable_bytes)
+      / node_memory_MemTotal_bytes * 100 > 99
+    for: 30m
+    labels:
+      descCN: 内存利用率太高
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_high_root_disk_utilization
+    annotations:
+      description: 挂载点/超过99%
+      summary: 主机{{ $labels.instance }}根磁盘利用率超过99%
+    expr: 100 * (node_filesystem_size_bytes{fstype=~"xfs|ext4",mountpoint="/",job=~"FIL-worker-service"}
+      - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 99
+    for: 5m
+    labels:
+      descCN: 根磁盘利用率太高
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_kern_error
+    annotations:
+      description: 有内核报错
+      summary: 主机{{ $labels.instance }}有内核错误
+    expr: kern_errs{job=~"FIL-worker-service"}> 0
+    for: 1m
+    labels:
+      descCN: 内核错误
+      level: high
+      severity: high
+      team: FIL-Worker
+  - alert: fil_worker_exist_read_only_disk
+    annotations:
+      description: 有只读磁盘, 设备名{{$labels.device}}
+      summary: 有只读磁盘, 设备名{{$labels.device}}
+    expr: disk_stat{job=~"FIL-worker-service"} > 0
+    for: 1m
+    labels:
+      descCN: 有只读磁盘
+      level: high
+      severity: high
+      source: HARDWARE
+      team: FIL-Worker
+  - alert: fil_worker_disk_high_temperature
+    annotations:
+      description: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+      summary: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+    expr: disk_temp{job=~"FIL-worker-service"} >= 100
+    for: 5m
+    labels:
+      descCN: 磁盘温度太高
+      level: high
+      severity: high
+      source: HARDWARE
+      team: FIL-Worker
+

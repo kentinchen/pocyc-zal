@@ -1,0 +1,14 @@
+{% for item in ips %}
+- name: {{Area}}-{{item}}
+  hostGroups:
+  - '{{Area}}-{{App}}'
+  tag: {{App}}-service
+  deploymentStatus: 0
+  itemDefaultApplication: {{App}}
+  itemDefaultHistory: 5d
+  itemDefaultTrends: 5d
+  itemDefaultTrapperHosts: 0.0.0.0/0
+  triggerTags:
+    {{Area}}-{{App}}: ""
+  alertsDir: .
+{% endfor %}

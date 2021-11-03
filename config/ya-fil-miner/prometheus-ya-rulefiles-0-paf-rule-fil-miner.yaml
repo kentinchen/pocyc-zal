@@ -1,0 +1,290 @@
+groups:
+- name: Host
+  rules:
+  - alert: fil_miner_host_no_exist
+    annotations:
+      description: 主机失联
+      parameter: code:{{$labels.instance}}
+      summary: '{{ $labels.instance }}掉线'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: up {job=~"FIL-miner-service"}  == 0
+    for: 10s
+    labels:
+      descCN: 无法检测到Miner主机
+      level: 重要信息
+      severity: critical
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_miner_gpu_no_exist
+    annotations:
+      description: 显卡失联
+      parameter: code:{{$labels.instance}}
+      summary: '{{ $labels.instance }}显卡掉线'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: up {job=~"FIL-dcgm-miner-service"} == 0
+    for: 10s
+    labels:
+      descCN: 无法检测到Miner显卡
+      level: critical
+      severity: critical
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_lotus_service_noline
+    annotations:
+      description: LOTUS服务掉线
+      parameter: code:{{$labels.lotusip}}
+      summary: '{{$labels.lotusip}}'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: lotus_scrape_execution_succeed{type=~"FIL",interface=~"lotus"} == 0
+    for: 10s
+    labels:
+      descCN: Lotus服务掉线
+      instance: '{{$labels.lotusip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_miner_service_noline
+    annotations:
+      description: MINER服务掉线
+      parameter: code:{{$labels.minerip}}
+      summary: '{{$labels.minerip}}服务掉线'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: lotus_scrape_execution_succeed{type=~"FIL",interface=~"miner"} == 0
+    for: 10s
+    labels:
+      descCN: Miner服务掉线
+      instance: '{{$labels.minerip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_lotus_diff_too_large
+    annotations:
+      description: 最小高度{{$labels.min_height}}，最小:{{$labels.min_minerid}}
+      parameter: code:{{$labels.instance}}
+      summary: '{{$labels.min_minerid}}高度不同步'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: lotus_sync_diff{type=~"FIL"} > 2
+    for: 5m
+    labels:
+      descCN: Lotus节点高度不同步
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_commit_wallet_balance_insufficient
+    annotations:
+      description: '{{$labels.miner}}钱包金额不足{{$labels.wallet_limit}}'
+      summary: '{{$labels.miner}}金额不足{{$labels.wallet_limit}}'
+    expr: balance_low{type=~"FIL"} > -1
+    for: 1m
+    labels:
+      descCN: Commit钱包金额不够
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_post_wallet_balance_insufficient
+    annotations:
+      description: '{{$labels.miner}}钱包金额不足{{$labels.wallet_limit}}'
+      summary: '{{$labels.miner}}金额不足{{$labels.wallet_limit}}'
+    expr: post_balance_low{type=~"FIL"} > -1
+    for: 1m
+    labels:
+      descCN: POST钱包金额不够
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_wallet_commit_balance_insufficient
+    annotations:
+      description: '{{$labels.type}}-{{$labels.miner}}钱包金额不足{{$labels.wallet_limit}}'
+      parameter: code:{{$labels.miner_ip}}
+      summary: '{{$labels.type}}-{{$labels.miner}}金额不足{{$labels.wallet_limit}}'
+      tel_list: "19160348857"
+      template: TP2107231
+    expr: balance_low { type=~"FIL_COMMIT" } > 0
+    for: 2m
+    labels:
+      descCN: '{{$labels.type}}钱包金额不够'
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_wallet_post_balance_insufficient
+    annotations:
+      description: '{{$labels.type}}-{{$labels.miner}}钱包金额不足{{$labels.wallet_limit}}'
+      parameter: code:{{$labels.miner_ip}}
+      summary: '{{$labels.type}}-{{$labels.miner}}金额不足{{$labels.wallet_limit}}'
+      tel_list: "19160348857"
+      template: TP2107231
+    expr: balance_low { type=~"FIL_POST" } > 0
+    for: 2m
+    labels:
+      descCN: '{{$labels.type}}钱包金额不够'
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_wallet_balance_insufficient
+    annotations:
+      description: '{{$labels.type}}-{{$labels.miner}}钱包金额不足{{$labels.wallet_limit}}'
+      parameter: code:{{$labels.miner_ip}}
+      summary: '{{$labels.type}}-{{$labels.miner}}金额不足{{$labels.wallet_limit}}'
+      tel_list: "19160348857"
+      template: TP2107231
+    expr: balance_low { type=~"FIL_WORKER" } > 0
+    for: 2m
+    labels:
+      descCN: '{{$labels.type}}钱包金额不够'
+      instance: '{{$labels.miner_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_lotus_mesg_blocking
+    annotations:
+      description: '{{$labels.lotus_ip}}'
+      parameter: code:{{$labels.lotus_ip}}
+      summary: '{{$labels.lotus_ip}}'
+      tel_list: "19160348857"
+      template: TP2102092
+    expr: mesg_blok{type="FIL"} == 1
+    for: 10s
+    labels:
+      descCN: Lotus消息阻塞
+      instance: '{{$labels.lotus_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+      tel_list: "19160348857"
+      telephone: "Yes"
+  - alert: fil_lotus_mesg_error
+    annotations:
+      description: '{{$labels.lotus_ip}}消息服务异常'
+      summary: '{{$labels.lotus_ip}}消息服务异常'
+    expr: mesg_blok{type="FIL"} == 2
+    for: 10s
+    labels:
+      descCN: Lotus消息服务异常
+      instance: '{{$labels.lotus_ip}}'
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_high_nvme_disk_utilization
+    annotations:
+      description: 设备名{{$labels.device}},挂载点{{ $labels.mountpoint }}, 超过99%
+      summary: '{{ $labels.instance }}挂载点{{ $labels.mountpoint }}超过99%'
+    expr: 100 * (node_filesystem_size_bytes{fstype=~"xfs|ext4",mountpoint=~"/mnt/nvme0n1p1|/mnt/nvme1n1p1|/mnt/nvme2n1p1|/mnt/nvme3n1p1|/mnt/nvme4n1p1",job=~"FIL-miner-service"}
+      - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 99
+    for: 5m
+    labels:
+      descCN: nvme磁盘利用率太高
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_high_cpu_utilization
+    annotations:
+      description: CPU使用率{{$value}}%, 超过99%
+      summary: '{{ $labels.instance }}CPU利用率太高'
+    expr: 100 * (1 - avg(irate(node_cpu_seconds_total{mode="idle",job=~"FIL-miner-service"}[2m]))
+      by(instance)) > 99
+    for: 30m
+    labels:
+      descCN: CPU利用率太高
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_high_mem_utilization
+    annotations:
+      description: 内存使用率{{ $value }}%, 超过99%
+      summary: '{{ $labels.instance }}内存利用率太高'
+    expr: (node_memory_MemTotal_bytes{job=~"FIL-miner-service"} - node_memory_MemAvailable_bytes)
+      / node_memory_MemTotal_bytes * 100 > 99
+    for: 30m
+    labels:
+      descCN: 内存利用率太高
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_disk_error
+    annotations:
+      description: 有磁盘错误
+      summary: '{{ $labels.instance }}有磁盘错误'
+    expr: raid_errs{job=~"FIL-miner-service"}> 0
+    for: 1m
+    labels:
+      descCN: 磁盘错误
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_high_root_disk_utilization
+    annotations:
+      description: 挂载点/, 超过99%
+      summary: '{{ $labels.instance }}根磁盘利用率太高'
+    expr: 100 * (node_filesystem_size_bytes{fstype=~"xfs|ext4",mountpoint="/",job=~"FIL-miner-service"}
+      - node_filesystem_avail_bytes) / node_filesystem_size_bytes > 99
+    for: 5m
+    labels:
+      descCN: 根磁盘利用率太高
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_kern_error
+    annotations:
+      description: 有内核报错
+      summary: '{{ $labels.instance }}有内核错误'
+    expr: kern_errs{job=~"FIL-miner-service"}> 0
+    for: 1m
+    labels:
+      descCN: 内核错误
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_nvidia_driver_abnormal
+    annotations:
+      description: nvidia驱动异常
+      summary: 主机{{ $labels.instance }}nvidia驱动异常
+    expr: online_dcgm{job=~"FIL-miner-service"} < 2
+    for: 5m
+    labels:
+      descCN: nvidia驱动异常
+      level: high
+      severity: high
+      team: FIL-Miner
+  - alert: fil_miner_exist_read_only_disk
+    annotations:
+      description: 有只读磁盘, 设备名{{$labels.device}}
+      summary: 有只读磁盘, 设备名{{$labels.device}}
+    expr: disk_stat{job=~"FIL-miner-service"}> 0
+    for: 1m
+    labels:
+      descCN: 有只读磁盘
+      level: high
+      severity: high
+      source: HARDWARE
+      team: FIL-Miner
+  - alert: fil_miner_disk_high_temperature
+    annotations:
+      description: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+      summary: 磁盘温度太高,设备名{{$labels.device}},温度{{ $value }}°C
+    expr: disk_temp{job=~"FIL-miner-service"} >= 100
+    for: 5m
+    labels:
+      descCN: 磁盘温度太高
+      level: high
+      severity: high
+      source: HARDWARE
+      team: FIL-Miner
+
